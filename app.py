@@ -60,12 +60,13 @@ CATEGORIAS = {
         "Caldo galinha", "Biscoito de leite", "Pão de queijo", "Farinha de trigo",
         "Arroz", "Macarrão", "Requeijão cremoso", "Café", "Óleo de soja",
         "Vinagre", "Leite UHT desnatado", "Farinha de mandioca", "Feijão carioquinha", "Cremne de leite",
-        "Sardinha em óleo", "Ovos brancos", "Cerveja", "Leite Condensado", "Manteiga", "Papel Aluminio", "Suco concentrado", "Fuba" 
+        "Sardinha em óleo", "Ovos brancos", "Cerveja", "Leite Condensado", "Manteiga", "Papel Aluminio", "Suco concentrado", "Fuba", "Mussarela", 
+        "Apresuntado", "Peito de frango", "Coxa de frango", "Contra Coxa", "Linguiça", "Moela", "Figado", "Coração" 
     ],
     "Higiene & Limpeza": [
         "Creme dental", "Aparelho de barbear", "Desodorante", "Sabão",
         "Detergente líquido", "Desinfetante", "Amaciante", "Limpador",
-        "Detergente em pó", "Sabonete", "Bombril", "Agua sanitaria", "Papel higienico"
+        "Detergente em pó", "Sabonete", "Bombril", "Agua sanitaria", "Papel higienico", "Sabão em pó"
     ]
 }
 
