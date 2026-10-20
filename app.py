@@ -48,7 +48,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Dados Iniciais (Sem carnes, frutas ou verduras)
+# Dados Iniciais (Categorias e seus itens)
 CATEGORIAS = {
     "Mercearia & Alimentos": [
         "Pão de forma", "Molho de tomate", "Milho verde", "Biscoito água e sal",
@@ -71,8 +71,8 @@ if "carrinho" not in st.session_state:
 if "outros_itens" not in st.session_state:
     st.session_state.outros_itens = []
 
-# Função para gerar o PDF em memória (Sem a letra 'x', apenas quantidade)
-def gerar_pdf(carrinho):
+# Função para gerar o PDF agrupado por categorias
+def gerar_pdf_por_categorias(carrinho, outros_itens):
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer, pagesize=letter)
     
@@ -80,27 +80,60 @@ def gerar_pdf(carrinho):
     p.setFont("Helvetica-Bold", 18)
     p.drawString(50, 750, "Lista de Compras")
     
-    # Cabeçalho da tabela
-    p.setFont("Helvetica-Bold", 12)
-    p.drawString(50, 720, "Item / Produto")
-    p.drawString(500, 720, "Qtd")
-    p.line(50, 712, 550, 712)
+    p.setFont("Helvetica", 10)
+    p.drawString(50, 735, f"Data: {st.session_state.get('data_atual', '')}")
     
-    p.setFont("Helvetica", 11)
-    y = 690
+    y = 705
     
-    for item, qtd in carrinho.items():
-        if qtd > 0:
-            if y < 50:
-                p.showPage()
-                y = 750
-                p.setFont("Helvetica", 11)
+    # Função auxiliar para verificar quebra de página
+    def verificar_espaco(altura_necessaria=20):
+        nonlocal y
+        if y < 50:
+            p.showPage()
+            y = 750
+            return True
+        return False
+
+    # Percorre as categorias principais
+    for cat_nome, itens in CATEGORIAS.items():
+        # Filtra apenas os itens desta categoria que têm qtd > 0
+        itens_cat_selecionados = {item: carrinho[item] for item in itens if carrinho.get(item, 0) > 0}
+        
+        if itens_cat_selecionados:
+            verificar_espaco(30)
+            p.setFont("Helvetica-Bold", 13)
+            p.setFillColorRGB(0.02, 0.47, 0.34) # Cor verde escuro para destaque
+            p.drawString(50, y, cat_nome)
+            y = y - 18
             
-            p.drawString(50, y, str(item))
-            # Quantidade como número puro
+            p.setFont("Helvetica", 11)
+            p.setFillColorRGB(0, 0, 0)
+            
+            for item, qtd in itens_cat_selecionados.items():
+                verificar_espaco(20)
+                p.drawString(65, y, str(item))
+                p.drawString(500, y, str(qtd))
+                y = y - 16
+            y = y - 6 # Espaço entre categorias
+
+    # Processa itens personalizados adicionados pelo usuário ("Outros Itens Adicionados")
+    outros_selecionados = {item: carrinho[item] for item in outros_itens if carrinho.get(item, 0) > 0}
+    if outros_selecionados:
+        verificar_espaco(30)
+        p.setFont("Helvetica-Bold", 13)
+        p.setFillColorRGB(0.02, 0.47, 0.34)
+        p.drawString(50, y, "Outros Itens Adicionados")
+        y = y - 18
+        
+        p.setFont("Helvetica", 11)
+        p.setFillColorRGB(0, 0, 0)
+        
+        for item, qtd in outros_selecionados.items():
+            verificar_espaco(20)
+            p.drawString(65, y, str(item))
             p.drawString(500, y, str(qtd))
-            y -= 20
-            
+            y = y - 16
+
     p.save()
     buffer.seek(0)
     return buffer
@@ -133,14 +166,14 @@ if st.session_state.outros_itens:
         with col_nome:
             st.write(f"**{item}**")
         with col_menos:
-            if st.button("➖", key=f"sub_{item}"):
+            if st.button("➖", key=f"sub_outro_{item}"):
                 if qtd_atual > 0:
                     st.session_state.carrinho[item] = qtd_atual - 1
                     st.rerun()
         with col_qtd:
             st.markdown(f"<h4 style='text-align: center; margin: 0;'>{qtd_atual}</h4>", unsafe_allow_html=True)
         with col_mais:
-            if st.button("➕", key=f"add_{item}"):
+            if st.button("➕", key=f"add_outro_{item}"):
                 st.session_state.carrinho[item] = qtd_atual + 1
                 st.rerun()
 
@@ -156,14 +189,14 @@ for cat_nome, itens in CATEGORIAS.items():
         with col_nome:
             st.write(item)
         with col_menos:
-            if st.button("➖", key=f"sub_{item}"):
+            if st.button("➖", key=f"sub_cat_{item}"):
                 if qtd_atual > 0:
                     st.session_state.carrinho[item] = qtd_atual - 1
                     st.rerun()
         with col_qtd:
             st.markdown(f"<h4 style='text-align: center; margin: 0;'>{qtd_atual}</h4>", unsafe_allow_html=True)
         with col_mais:
-            if st.button("➕", key=f"add_{item}"):
+            if st.button("➕", key=f"add_cat_{item}"):
                 st.session_state.carrinho[item] = qtd_atual + 1
                 st.rerun()
 
@@ -176,8 +209,8 @@ st.markdown("---")
 if itens_selecionados:
     st.success(f"**Total de itens selecionados:** {sum(itens_selecionados.values())} unidades")
     
-    # 1. Gerar PDF
-    pdf_bytes = gerar_pdf(itens_selecionados)
+    # 1. Gerar PDF com categorias
+    pdf_bytes = gerar_pdf_por_categorias(st.session_state.carrinho, st.session_state.outros_itens)
     
     st.download_button(
         label="📄 1º Passo: Baixar PDF da Lista",
@@ -187,15 +220,23 @@ if itens_selecionados:
         use_container_width=True
     )
     
-    # 2. Link formatado para o WhatsApp
+    # 2. Texto formatado para o WhatsApp (separado por categorias para ficar limpo)
     texto_wa = "*LISTA DE COMPRAS*\n\n"
-    for k, v in itens_selecionados.items():
-        texto_wa += f"• {k}: *{v}*\n"
+    
+    for cat_nome, itens in CATEGORIAS.items():
+        ativos_cat = [f"• {item}: *{st.session_state.carrinho[item]}*" for item in itens if st.session_state.carrinho.get(item, 0) > 0]
+        if ativos_cat:
+            texto_wa += f"*{cat_nome}*\n" + "\n".join(ativos_cat) + "\n\n"
+            
+    # Outros itens
+    ativos_outros = [f"• {item}: *{st.session_state.carrinho[item]}*" for item in st.session_state.outros_itens if st.session_state.carrinho.get(item, 0) > 0]
+    if ativos_outros:
+        texto_wa += f"*Outros Itens Adicionados*\n" + "\n".join(ativos_outros) + "\n\n"
         
     url_wa = f"https://api.whatsapp.com/send?text={urllib.parse.quote(texto_wa)}"
     
     st.markdown(
-        f'<a href="{url_wa}" target="_blank" class="btn-whatsapp">📲 2º Passo: Compartilhar no WhatsApp</a>',
+        f'<a href="{url_wa}" target="_blank" class="btn-whatsapp">📲 2º Passo: Compartilhar no WhatsApp (Texto)</a>',
         unsafe_allow_html=True
     )
 else:
