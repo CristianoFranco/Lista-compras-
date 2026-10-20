@@ -57,15 +57,15 @@ st.markdown("""
 CATEGORIAS = {
     "Mercearia & Alimentos": [
         "Pão de forma", "Molho de tomate", "Milho verde", "Biscoito água e sal",
-        "Caldo galinha", "Biscoito rancheiro", "Pão de queijo", "Farinha de trigo",
+        "Caldo galinha", "Biscoito de leite", "Pão de queijo", "Farinha de trigo",
         "Arroz", "Macarrão", "Requeijão cremoso", "Café", "Óleo de soja",
-        "Vinagre", "Leite UHT desnatado", "Farinha de mandioca", "Feijão carioquinha",
-        "Sardinha em óleo", "Ovos brancos", "Cerveja"
+        "Vinagre", "Leite UHT desnatado", "Farinha de mandioca", "Feijão carioquinha", "Cremne de leite",
+        "Sardinha em óleo", "Ovos brancos", "Cerveja", "Leite Condensado", "Manteiga", "Papel Aluminio", "Suco concentrado", "Fuba" 
     ],
     "Higiene & Limpeza": [
         "Creme dental", "Aparelho de barbear", "Desodorante", "Sabão",
         "Detergente líquido", "Desinfetante", "Amaciante", "Limpador",
-        "Detergente em pó"
+        "Detergente em pó", "Sabonete", "Bombril", "Agua sanitaria", "Papel higienico"
     ]
 }
 
